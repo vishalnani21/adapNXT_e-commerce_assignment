@@ -4,17 +4,28 @@ const Product = require("../models/Product");
 const { userAuth } = require("../middleware/auth");
 const checkRole = require("../middleware/checkRole.js");
 
-// Get All Products
+
 router.get("/products", async (req, res) => {
   try {
-    const products = await Product.find();
-    res.json(products);
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 10; 
+    const skip = (page - 1) * limit;
+
+    const products = await Product.find().skip(skip).limit(limit);
+    const totalProducts = await Product.countDocuments();
+
+    res.json({
+      currentPage: page,
+      totalPages: Math.ceil(totalProducts / limit),
+      totalProducts,
+      products,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Get Single Product
+
 router.get("/products/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -25,7 +36,7 @@ router.get("/products/:id", async (req, res) => {
   }
 });
 
-// Add Product (admin only)
+
 router.post("/products", userAuth, checkRole("admin"), async (req, res) => {
   try {
     const { name, price, category, stock } = req.body;
@@ -36,7 +47,7 @@ router.post("/products", userAuth, checkRole("admin"), async (req, res) => {
   }
 });
 
-// Update Product (admin only)
+
 router.put("/products/:id", userAuth, checkRole("admin"), async (req, res) => {
   try {
     const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -46,7 +57,7 @@ router.put("/products/:id", userAuth, checkRole("admin"), async (req, res) => {
   }
 });
 
-// Delete Product (admin only)
+
 router.delete("/products/:id", userAuth, checkRole("admin"), async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);

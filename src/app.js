@@ -20,11 +20,12 @@ app.use(cookieparser());
 const authRouter = require("./routers/auth.js");
 const productRouter = require('./routers/product.js');
 const cartRouter = require('./routers/cart.js');
+const orderRoute=require('./routers/order.js');
 
 app.use("/", authRouter);
 app.use("/",productRouter);
 app.use("/",cartRouter);
-
+app.use("/",orderRoute)
 
 
 const PORT = process.env.PORT || 5000;
